@@ -1,2 +1,4 @@
 
-# OM|LOG
+# OM.LOG
+
+> Log util.
