@@ -1,20 +1,24 @@
 package om.log;
 
-class FileTransport extends Transport {
+#if sys
+
+class FileTransport extends BaseTransport {
 
     public final file : String;
-    public final maxSize : Null<Float>; // 1e+9
+    public final maxFileSize : Null<Float>; // 1e+9
+    //public final maxLines : Null<Float>;
+    public var bytesWritten(default,null) : Int;
 
     var out : sys.io.FileOutput;
 
-    //public function new(?file:String, maxSize=1024*1024*1024) {
-    public function new(file:String, ?maxSize:Int) {
+    public function new(file:String, ?maxFileSize:Int) {
         super();
         this.file = "om.log";
-        this.maxSize = maxSize;
+        this.maxFileSize = maxFileSize;
     }
 
     override function init() {
+        bytesWritten = 0;
         if(FileSystem.exists(file)) {
             out = File.append(file);
         } else {
@@ -23,11 +27,25 @@ class FileTransport extends Transport {
     }
 
     override function dispose() {
-        out.close();
+        try {
+            out.close();
+        } catch(e) {
+            trace(e);
+        }
+        bytesWritten = 0;
     }
+
+    //public function changeFilePath
 
     function output(message:String) {
-        out.writeString(message);
+        try {
+            out.writeString(message);
+        } catch(e) {
+            trace(e);
+            return;
+        }
+        bytesWritten = message.length;
     }
-
 }
+
+#end

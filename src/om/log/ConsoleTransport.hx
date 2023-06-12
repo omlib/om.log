@@ -6,15 +6,15 @@ private enum StdFile {
     //level(l:Level)
 }
 
-class ConsoleTransport extends Transport {
+class ConsoleTransport extends BaseTransport {
  
     public var file : StdFile;
 
     // var levelMapping = [
-    //     debug => Out,
-    //     info => Out,
-    //     warn => Out,
-    //     error => Err
+    //     debug => out,
+    //     info => out,
+    //     warn => out,
+    //     error => err
     // ];
 
     public function new(?file=StdFile.out, ?level: Level) {

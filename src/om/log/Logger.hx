@@ -12,7 +12,7 @@ private typedef Callback = String->Level->String->Meta->Void;
 /**
 **/
 @:access(om.log.Transport)
-class Logger {
+class CLogger {
 
     public final on = new Emitter();
 
@@ -25,15 +25,18 @@ class Logger {
         this.level = level;
         if(transports == null) transports = [new ConsoleTransport()];
         for(t in transports) add(t);
-        this.format = format ?? "::date:: ::level:: ::message::\n";
+        this.format = format ?? "::date:: ::level:: ::message:: ::meta::\n";
     }
 
     public inline function iterator() : Iterator<Transport>
         return this.iterator();
 
     public function add(transport: Transport) {
+        if(transports.contains(transport))
+            return false;
         this.transports.push(transport);
         transport.init();
+        return true;
     }
 
     public function remove(transport: Transport) : Bool {
@@ -78,3 +81,9 @@ class Logger {
         log(Level.error, message, meta, callback);
 }
 
+@:forward
+abstract Logger(CLogger) {
+    public inline function new(level=Level.warn, ?transports: Array<Transport>, ?format: String)
+        this = new CLogger(level, transports, format);
+
+}

@@ -1,15 +1,8 @@
 package om.log;
 
-abstract class Transport {
-
-    public var level : Null<Level>;
-
-    public function new(?level: Level) {
-        this.level = level;
-    }
-
-    function init() {}
-    function dispose() {}
-
-    abstract function output(message:String) : Void;
+interface Transport {
+    var level : Null<Level>;
+    private function init() : Void;
+    private function dispose() : Void;
+    function output(messge: String) : Void;
 }
