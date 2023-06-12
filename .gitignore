@@ -1,0 +1,4 @@
+*.log
+_*
+doc/
+example/app*

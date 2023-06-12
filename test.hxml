@@ -1,0 +1,7 @@
+-main Unit
+-cp test
+-lib om.log
+-lib utest
+-dce no
+-D no-deprecation-warnings
+-x Unit

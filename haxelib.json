@@ -1,0 +1,14 @@
+{
+    "name": "om.log",
+    "version": "0.0.0",
+    "description": "Logging util",
+    "tags": ["om","log"],
+    "url": "https://github.com/omlib/om.log",
+    "license": "Public",
+    "contributors": ["tong"],
+    "releasenote": "See CHANGELOG.md",
+    "classPath" : "src/",
+    "dependencies": {
+		"om.core": ""
+	}
+}
