@@ -3,6 +3,7 @@ package om.log;
 abstract class BaseTransport implements Transport {
 
     public var level : Null<Level>;
+    public var silent = false;
 
     public function new(?level: Level) {
         this.level = level;

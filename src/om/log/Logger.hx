@@ -52,6 +52,11 @@ class CLogger {
         return true;
     }
 
+    public function dispose() {
+        for(t in transports) t.dispose();
+        transports = [];
+    }
+
     //public function query() {
 
     //public function stream(start=0, handler: String->Void) {
@@ -62,13 +67,13 @@ class CLogger {
         if(silent || !this.enabledFor(level))
             return;
         final str = new haxe.Template(format).execute({
-            level: level,
+            level: level.toString(),
             message: message,
             date: Date.now().toString(),
             meta: meta
         });
         for(t in transports) {
-            if(!t.enabledFor(level))
+            if(t.silent || !t.enabledFor(level))
                 continue;
             t.output(str);
         }
