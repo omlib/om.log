@@ -11,6 +11,7 @@ enum abstract Level(Int) from Int to Int {
     //     return this >= cast(l, Int);
     // }
     
+    
     @:to public function toString() : String {
         return switch this {
             case debug: "debug";
@@ -20,8 +21,14 @@ enum abstract Level(Int) from Int to Int {
             case _: null;
         }
     }
+
+    @:from public static function fromString(s:String) : Null<Level> {
+        return switch s {
+            case "error": error;
+            case "warn": warn;
+            case "info": info;
+            case "debug": debug;
+            case _: null;
+        }
+    }
 }
-
-/*
-*/
-
