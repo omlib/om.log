@@ -1,6 +1,5 @@
 package om.log;
 
-import om.log.ConsoleTransport;
 import om.log.Level;
 import om.log.Transport;
 
@@ -26,7 +25,7 @@ class CLogger {
         this.level = level;
         if(transports != null)
             for(t in transports) add(t);
-        this.format = new om.log.format.AnsiFormat();
+        this.format = new om.log.format.SimpleFormat();
     }
 
     public inline function iterator() : Iterator<Transport>
@@ -63,10 +62,10 @@ class CLogger {
 
     //public function clone() {}
 
-    public inline function log(level=Level.info, message: String, ?meta: Dynamic, ?callback: Callback) {
+    public inline function log(level: Level, message: String, ?meta: Dynamic, ?callback: Callback) {
         if(silent || !this.enabledFor(level))
             return;
-        var _transports = transports.filter(t -> return !t.silent && t.enabledFor(level));
+        final _transports = transports.filter(t -> return !t.silent && t.enabledFor(level));
         if(_transports.length > 0) {
             final msg : Message = {
                 level: level.toString(),
@@ -78,10 +77,12 @@ class CLogger {
             for(t in _transports) {
                 if(t.silent || !t.enabledFor(level))
                     continue;
-                t.output(str);
+                t.output((t.format == null) ? str : t.format.format(msg));
             }
         }
     }
+
+    //public function trace() {
 
     public inline function debug(message: String, ?meta: Dynamic, ?callback: Callback)
         log(Level.debug, message, meta, callback);
@@ -94,6 +95,19 @@ class CLogger {
 
     public inline function error(message: String, ?meta: Dynamic, ?callback: Callback)
         log(Level.error, message, meta, callback);
+
+    public function redirectTraces(defaultLevel=Level.debug) {
+        haxe.Log.trace = (v:Dynamic, ?infos: haxe.PosInfos) -> {
+            var level : Null<Level> = null;
+            if(infos != null) {
+                if(infos.customParams != null) {
+                    level = Level.fromString(infos.customParams[0]);
+                }
+            }
+            if(level == null) level = defaultLevel;
+            log(level, v, infos);
+        }
+    }
 }
 
 @:forward
