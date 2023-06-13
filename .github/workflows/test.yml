@@ -23,7 +23,7 @@ jobs:
       - run: haxe --version
       - name: Setup
         run: |
-          haxelib git om.core https://github.com/om.lib/om.core
+          haxelib git om.core https://github.com/omlib/om.core
           haxelib dev om.log .
       - name: Run unit tests
         run: haxe test.hxml
