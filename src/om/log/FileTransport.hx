@@ -19,10 +19,10 @@ class FileTransport extends BaseTransport {
         super();
         this.file = FileSystem.absolutePath(file);
         this.maxFileSize = maxFileSize;
-        fileSize = FileSystem.stat(file).size;
     }
 
     override function init() {
+        fileSize = FileSystem.exists(file) ? FileSystem.stat(file).size : 0;
         bytesWritten = 0;
         if(FileSystem.exists(file)) {
             out = File.append(file);
