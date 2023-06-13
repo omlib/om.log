@@ -1,0 +1,31 @@
+name: test
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        haxe:
+        - latest
+        - 4.3.1
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Install haxe ${{ matrix.haxe }}
+        uses: krdlab/setup-haxe@v1.5.1
+        with:
+          haxe-version: ${{ matrix.haxe }}
+      - run: haxe --version
+      - name: Setup
+        run: |
+          haxelib git om.core https://github.com/om.lib/om.core
+          haxelib dev om.log .
+      - name: Run unit tests
+        run: haxe test.hxml
+      - name: Build doc.xml
+        run: haxe doc.hxml
