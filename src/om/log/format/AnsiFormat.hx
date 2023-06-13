@@ -32,8 +32,8 @@ class AnsiFormat implements om.log.Format {
 
     public function format(msg:Message) : String {
         var out = ansify(Date.fromTime(msg.time).toString(), theme.date);
-        var levelAnsi = Reflect.field(theme.level, msg.level);
-        out += " "+ansify(std.StringTools.rpad(msg.level.toUpperCase(), " ", 5), levelAnsi);
+        var levelAnsi : Array<Int> = if(msg.level != null) Reflect.field(theme.level, msg.level) else null;
+        out += " "+ansify(std.StringTools.rpad(" "+msg.level.toUpperCase()+" ", " ", 7), levelAnsi);
         out += " "+ansify(msg.content, theme.content);
         if(msg.meta != null)
             out += " "+ansify(Std.string(msg.meta), theme.meta);

@@ -15,8 +15,8 @@ class FileTransport extends BaseTransport {
 
     var out : sys.io.FileOutput;
 
-    public function new(file="om.log", ?maxFileSize:Int) {
-        super();
+    public function new(file="om.log", ?level: Level, ?format: Format, ?maxFileSize:Int) {
+        super(level, format);
         this.file = FileSystem.absolutePath(file);
         this.maxFileSize = maxFileSize;
     }

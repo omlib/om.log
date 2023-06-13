@@ -4,9 +4,11 @@ abstract class BaseTransport implements Transport {
 
     public var level : Null<Level>;
     public var silent = false;
+    public var format : Format;
 
-    public function new(?level: Level) {
+    public function new(?level: Level, ?format: Format) {
         this.level = level;
+        this.format = format;
     }
 
     function init() {}

@@ -17,8 +17,8 @@ class ConsoleTransport extends BaseTransport {
     //     error => err
     // ];
 
-    public function new(?file=StdFile.out, ?level: Level) {
-        super(level);
+    public function new(?file=StdFile.out, ?level: Level, ?format: Format) {
+        super(level, format);
         this.file = file;
     }
 
