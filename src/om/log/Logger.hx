@@ -17,7 +17,7 @@ class CLogger {
     public final on = new Emitter();
 
     public var level = Level.warn;
-    public var format : String;
+    public var format : Format;
     public var silent = false;
 
     var transports = new Array<Transport>();
@@ -26,7 +26,7 @@ class CLogger {
         this.level = level;
         if(transports == null) transports = [new ConsoleTransport()];
         for(t in transports) add(t);
-        this.format = format ?? "::date:: ::level:: ::message:: ::if(meta!=null)::::meta::::end::\n";
+        this.format = new om.log.format.AnsiFormat();
     }
 
     public inline function iterator() : Iterator<Transport>
@@ -66,12 +66,13 @@ class CLogger {
     public inline function log(level=Level.info, message: String, ?meta: Dynamic, ?callback: Callback) {
         if(silent || !this.enabledFor(level))
             return;
-        final str = new haxe.Template(format).execute({
+        final msg : Message = {
             level: level.toString(),
-            message: message,
-            date: Date.now().toString(),
-            meta: meta
-        });
+            time: Date.now().getTime(),
+            content: message,
+            meta: meta,
+        };
+        final str = format.format(msg);
         for(t in transports) {
             if(t.silent || !t.enabledFor(level))
                 continue;

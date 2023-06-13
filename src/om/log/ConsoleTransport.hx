@@ -23,9 +23,10 @@ class ConsoleTransport extends BaseTransport {
     }
 
     public function output(message:String) {
+        final str = '$message\n';
         switch file {
-        case err: Sys.stderr().writeString(message);
-        case _: Sys.stdout().writeString(message);
+        case err: Sys.stderr().writeString(str);
+        case _: Sys.stdout().writeString(str);
         }
     }
 }

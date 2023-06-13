@@ -33,7 +33,7 @@ class FileTransport extends BaseTransport {
 
     function output(message:String) {
         try {
-            out.writeString(message);
+            out.writeString('$message\n');
         } catch(e) {
             trace(e);
             return;
