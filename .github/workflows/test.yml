@@ -25,8 +25,10 @@ jobs:
         run: |
           haxelib git om.core https://github.com/omlib/om.core
           haxelib dev om.log .
-          haxelib install test.hxml --always
-          haxelib install doc.hxml --always
+          haxelib install hxcpp
+          haxelib install hxnodejs
+          haxelib install format
+          haxelib install utest
       - name: Run unit tests
         run: haxe test.hxml
       - name: Build doc.xml
