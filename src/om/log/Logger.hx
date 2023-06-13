@@ -22,10 +22,10 @@ class CLogger {
 
     var transports = new Array<Transport>();
 
-    public function new(level=Level.warn, ?transports: Array<Transport>, ?format: String) {
+    public function new(level=Level.debug, ?transports: Array<Transport>, ?format: String) {
         this.level = level;
-        if(transports == null) transports = [new ConsoleTransport()];
-        for(t in transports) add(t);
+        if(transports != null)
+            for(t in transports) add(t);
         this.format = new om.log.format.AnsiFormat();
     }
 
@@ -66,17 +66,20 @@ class CLogger {
     public inline function log(level=Level.info, message: String, ?meta: Dynamic, ?callback: Callback) {
         if(silent || !this.enabledFor(level))
             return;
-        final msg : Message = {
-            level: level.toString(),
-            time: Date.now().getTime(),
-            content: message,
-            meta: meta,
-        };
-        final str = format.format(msg);
-        for(t in transports) {
-            if(t.silent || !t.enabledFor(level))
-                continue;
-            t.output(str);
+        var _transports = transports.filter(t -> return !t.silent && t.enabledFor(level));
+        if(_transports.length > 0) {
+            final msg : Message = {
+                level: level.toString(),
+                time: Date.now().getTime(),
+                content: message,
+                meta: meta,
+            };
+            final str = format.format(msg);
+            for(t in _transports) {
+                if(t.silent || !t.enabledFor(level))
+                    continue;
+                t.output(str);
+            }
         }
     }
 
