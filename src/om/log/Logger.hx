@@ -25,7 +25,7 @@ class CLogger {
         this.level = level;
         if(transports == null) transports = [new ConsoleTransport()];
         for(t in transports) add(t);
-        this.format = format ?? "::date:: ::level:: ::message:: ::meta::\n";
+        this.format = format ?? "::date:: ::level:: ::message:: ::if(meta!=null)::::meta::::end::\n";
     }
 
     public inline function iterator() : Iterator<Transport>
