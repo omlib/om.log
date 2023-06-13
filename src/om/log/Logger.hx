@@ -18,6 +18,7 @@ class CLogger {
 
     public var level = Level.warn;
     public var format : String;
+    public var silent = false;
 
     var transports = new Array<Transport>();
 
@@ -34,8 +35,13 @@ class CLogger {
     public function add(transport: Transport) {
         if(transports.contains(transport))
             return false;
+        try {
+            transport.init();
+        } catch(e) {
+            trace(e);
+            return false;
+        }
         this.transports.push(transport);
-        transport.init();
         return true;
     }
 
@@ -53,7 +59,7 @@ class CLogger {
     //public function clone() {}
 
     public inline function log(level=Level.info, message: String, ?meta: Dynamic, ?callback: Callback) {
-        if(!this.enabledFor(level))
+        if(silent || !this.enabledFor(level))
             return;
         final str = new haxe.Template(format).execute({
             level: level,
