@@ -1,4 +1,6 @@
-package om.log;
+package om.log.target;
+
+import om.log.Logger;
 
 private enum StdFile {
     out;
@@ -6,7 +8,10 @@ private enum StdFile {
     //level(l:Level)
 }
 
-class ConsoleTransport extends BaseTransport {
+/**
+    Log to stdout/stderr.
+**/
+class ConsoleTarget extends BaseTarget {
  
     public var file : StdFile;
 
@@ -17,8 +22,8 @@ class ConsoleTransport extends BaseTransport {
     //     error => err
     // ];
 
-    public function new(?file=StdFile.out, ?level: Level, ?format: Format) {
-        super(level, format);
+    public function new(?file=StdFile.out, ?format: Format) {
+        super(format);
         this.file = file;
     }
 

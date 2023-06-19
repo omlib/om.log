@@ -2,7 +2,7 @@
     "name": "om.log",
     "version": "0.0.0",
     "description": "Logging util",
-    "tags": ["om","log"],
+    "tags": ["om","log","logging"],
     "url": "https://github.com/omlib/om.log",
     "license": "Public",
     "contributors": ["tong"],

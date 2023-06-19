@@ -1,18 +1,23 @@
 package om.log.format;
 
+import om.log.Logger;
+
+using StringTools;
+
 private typedef Theme = {
     var content : Array<Int>;
     var date : Array<Int>;
     var meta : Array<Int>;
-    var level : {
-        error: Array<Int>,
-        warn: Array<Int>,
-        info: Array<Int>,
-        debug: Array<Int>,
-    };
+    var level : Array<Array<Int>>;
+    // var level : {
+    //     error: Array<Int>,
+    //     warn: Array<Int>,
+    //     info: Array<Int>,
+    //     debug: Array<Int>,
+    // };
 }
 
-class AnsiFormat implements om.log.Format {
+class AnsiFormat implements Format {
 
     public var theme : Theme;
 
@@ -21,19 +26,28 @@ class AnsiFormat implements om.log.Format {
             date: [37],
             content: [],
             meta: [37],
-            level: {
-                error: [41],
-                warn: [45],
-                info: [44],
-                debug: [47],
-            }
+            level: [
+                [41],
+                [45],
+                [44],
+                [47]
+            ]
+            // level: {
+                // error: [41],
+                // warn: [45],
+                // info: [44],
+                // debug: [47],
+            // }
         };
     }
 
     public function format(msg:Message) : String {
+        var out = msg.content;
         var out = ansify(Date.fromTime(msg.time).toString(), theme.date);
-        var levelAnsi : Array<Int> = if(msg.level != null) Reflect.field(theme.level, msg.level) else null;
-        out += " "+ansify(std.StringTools.rpad(" "+msg.level.toUpperCase()+" ", " ", 7), levelAnsi);
+        //trace(msg.level);
+        var levelAnsi : Array<Int> = if(msg.level != null) theme.level[msg.level] else null;
+        //out += " "+ansify(std.StringTools.rpad(" "+msg.level.toUpperCase()+" ", " ", 7), levelAnsi);
+        out += " "+ansify(std.StringTools.rpad(" "+msg.level+" ", " ", 7), levelAnsi);
         out += " "+ansify(msg.content, theme.content);
         if(msg.meta != null)
             out += " "+ansify(Std.string(msg.meta), theme.meta);

@@ -1,6 +1,10 @@
 package om.log.format;
 
-class SimpleFormat implements om.log.Format {
+import om.log.Logger;
+
+using StringTools;
+
+class DefaultFormat implements Format {
     public function new() {}
     public function format(msg:Message) : String {
         var date = Date.fromTime(msg.time);

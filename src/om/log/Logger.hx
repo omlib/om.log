@@ -1,118 +1,128 @@
 package om.log;
 
-import om.log.Level;
-import om.log.Transport;
+#if macro
+import haxe.macro.Context;
+import haxe.macro.Expr;
+#end
 
-using om.log.LevelTools;
+class Logger {
 
-private typedef Meta = Dynamic;
-private typedef Callback = String->Level->String->Meta->Void;
-
-/**
-**/
-@:access(om.log.Transport)
-class CLogger {
-
-    public final on = new Emitter();
-
-    public var level = Level.warn;
+    public var level : Null<Int>;
     public var format : Format;
+    public var targets : Array<Target>;
     public var silent = false;
 
-    var transports = new Array<Transport>();
-
-    public function new(level=Level.debug, ?transports: Array<Transport>, ?format: String) {
+    public function new<T:Int>(level:T, ?targets: Array<Target>, ?format: Format) {
         this.level = level;
-        if(transports != null)
-            for(t in transports) add(t);
-        this.format = new om.log.format.SimpleFormat();
+        this.format = format ?? cast new om.log.format.DefaultFormat();
+        trace(this.format);
+        this.targets = [];
+        if(targets != null) for(t in targets) add(t);
     }
 
-    public inline function iterator() : Iterator<Transport>
+    public inline function iterator() : Iterator<Target>
         return this.iterator();
 
-    public function add(transport: Transport) {
-        if(transports.contains(transport))
-            return false;
-        try {
-            transport.init();
-        } catch(e) {
+    public function add(target: Target) {
+        // if(transports.contains(transport))
+        //     return false;
+        // target.init(error->{
+        //     if(error!= null) trace(error) else {
+        //         this.targets.push(target);
+        //     }
+        //
+        // });
+        try target.init() catch(e) {
             trace(e);
             return false;
         }
-        this.transports.push(transport);
+        this.targets.push(target);
         return true;
     }
 
-    public function remove(transport: Transport) : Bool {
-        if(!this.transports.remove(transport))
+    public function remove(target: Target) : Bool {
+        if(!this.targets.remove(target))
             return false;
-        transport.dispose();
+        target.dispose();
         return true;
     }
 
-    public function dispose() {
-        for(t in transports) t.dispose();
-        transports = [];
-    }
-
-    //public function query() {
-
-    //public function stream(start=0, handler: String->Void) {
-
-    //public function clone() {}
-
-    public inline function log(level: Level, message: String, ?meta: Dynamic, ?callback: Callback) {
-        if(silent || !this.enabledFor(level))
+    public function log(level:Int, message:String, ?meta: Dynamic) {
+        if(silent || level > this.level)
             return;
-        final _transports = transports.filter(t -> return !t.silent && t.enabledFor(level));
-        if(_transports.length > 0) {
-            final msg : Message = {
-                level: level.toString(),
-                time: Date.now().getTime(),
+        final _targets = targets.filter(t -> return !t.silent && enabledFor(level));
+        if(_targets.length > 0) {
+            final msg : om.log.Message = {
+                level: level, // level.toString(),
+                time: om.Time.now(),
                 content: message,
                 meta: meta,
             };
-            final str = format.format(msg);
-            for(t in _transports) {
-                if(t.silent || !t.enabledFor(level))
-                    continue;
-                t.output((t.format == null) ? str : t.format.format(msg));
+            var str = this.format.format(msg);
+            /*
+            var str : String = null;
+            if(this.format != null) str = this.format.format(msg);
+            */
+            for(t in _targets) {
+                //if(t.format != null) t.output(t.format.format(msg)); 
+                //else if(str != null) t.output(str);
+                t.output(str);
             }
         }
+        //return this;
+    }
+    
+    macro public function examine(ethis: Expr, rest: Array<Expr>) {
+        var printer = new haxe.macro.Printer();
+        var namedArgs = rest.map(e->{
+            return switch e.expr {
+            case EConst(CInt(_) | CFloat(_)): macro '$e';
+            case EConst(CString(_)): macro '$e';
+            case _:
+                var estr = printer.printExpr(e);
+                return macro $v{estr};
+            }
+        });
+        return macro $ethis.log(-1, ${joinArgExprs(namedArgs)});
     }
 
-    //public function trace() {
+    public function enabledFor(level: Null<Int>) : Bool {
+        return ((this.level == null) || (level == null)) ? true
+            : cast(this.level, Int) >= cast(level, Int);
+    }
 
-    public inline function debug(message: String, ?meta: Dynamic, ?callback: Callback)
-        log(Level.debug, message, meta, callback);
-
-    public inline function info(message: String, ?meta: Dynamic, ?callback: Callback)
-        log(Level.info, message, meta, callback);
-
-    public inline function warn(message: String, ?meta: Dynamic, ?callback: Callback)
-        log(Level.warn, message, meta, callback);
-
-    public inline function error(message: String, ?meta: Dynamic, ?callback: Callback)
-        log(Level.error, message, meta, callback);
-
-    public function redirectTraces(defaultLevel=Level.debug) {
+    /*
+    public function redirectTraces(defaultLevel:Int) {
         haxe.Log.trace = (v:Dynamic, ?infos: haxe.PosInfos) -> {
-            var level : Null<Level> = null;
+            var level : Null<Int> = null;
             if(infos != null) {
                 if(infos.customParams != null) {
-                    level = Level.fromString(infos.customParams[0]);
+                    //level = Level.fromString(infos.customParams[0]);
                 }
             }
             if(level == null) level = defaultLevel;
             log(level, v, infos);
         }
     }
-}
+    */
 
-@:forward
-abstract Logger(CLogger) {
-    public inline function new(level=Level.warn, ?transports: Array<Transport>, ?format: String)
-        this = new CLogger(level, transports, format);
+    public function dispose() {
+        for(t in targets) t.dispose();
+        targets = [];
+    }
 
+    #if macro
+
+	static function joinArgExprs(rest: Array<Expr>) : ExprOf<String> {
+		var msg: Expr = macro '';
+		var sepExpr: Expr = {expr: EConst(CString(" ")), pos: haxe.macro.PositionTools.make({min: 0, max: 0, file: ""})};
+		for(i in 0...rest.length) {
+			var e = rest[i];
+			msg = macro $msg + $e;
+			if (i != rest.length - 1) msg = macro $msg + $sepExpr;
+		}
+		return msg;
+	}
+
+	#end
 }

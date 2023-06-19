@@ -1,10 +1,17 @@
-package om.log;
+package om.log.target;
 
+import om.log.Logger;
 #if sys
+#else
+import js.node.fs.WriteStream;
+#end
 
 using haxe.io.Path;
 
-class FileTransport extends BaseTransport {
+/**
+    Log to file.
+**/
+class FileTarget extends BaseTarget {
 
     public final file : String;
     public final maxFileSize : Null<Float>; // 1e+9
@@ -13,25 +20,39 @@ class FileTransport extends BaseTransport {
     public var fileSize(default,null) : Int;
     public var bytesWritten(default,null) : Int;
 
-    var out : sys.io.FileOutput;
+    #if sys
+    public var out : sys.io.FileOutput;
+    #elseif nodejs
+    public var out : WriteStream;
+    #end
 
-    public function new(file="om.log", ?level: Level, ?format: Format, ?maxFileSize:Int) {
-        super(level, format);
-        this.file = FileSystem.absolutePath(file);
+    public function new(?file="om.log", ?level: Int, ?format: Format, ?maxFileSize:Int) {
+        //super(level, format);
+        super(format);
+        this.file =
+            #if sys
+            FileSystem.absolutePath(file);
+            #elseif nodejs
+            js.node.Path.resolve(file);
+            #end
         this.maxFileSize = maxFileSize;
     }
 
+    //override function init(onReady:String->Void) {
     override function init() {
-        fileSize = FileSystem.exists(file) ? FileSystem.stat(file).size : 0;
         bytesWritten = 0;
-        if(FileSystem.exists(file)) {
-            out = File.append(file);
-        } else {
-            out = File.write(file);
-        }
+        #if sys
+        fileSize = FileSystem.exists(file) ? FileSystem.stat(file).size : 0;
+        out = FileSystem.exists(file) ? File.append(file) : File.write(file);
+        #elseif nodejs
+        //TODO
+        out = js.node.Fs.createWriteStream(file);
+        #end
+        //onReady(null);
     }
 
     function output(message:String) {
+        #if sys
         try {
             out.writeString('$message\n');
         } catch(e) {
@@ -58,19 +79,23 @@ class FileTransport extends BaseTransport {
             FileSystem.rename(this.file, '${this.file}.$index');
             out = File.write(this.file);
         }
+        #elseif nodejs
+        //TODO:
+        out.write('$message\n');
+        #end
     }
 
     override function dispose() {
-        try {
-            out.close();
-        } catch(e) {
+        #if sys
+        try out.close() catch(e) {
             trace(e);
         }
+        #elseif nodejs
+        out.end();
+        #end
         bytesWritten = 0;
     }
 
     //public function changeFilePath
-
 }
 
-#end
