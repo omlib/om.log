@@ -10,7 +10,7 @@ class JsonFormat implements om.log.Format {
         this.space = space;
     }
 
-    public function format(msg:Message) : String {
+    public function format(msg: om.log.Message) : String {
         final obj = {};
         for(f in Reflect.fields(msg)) {
             final v = Reflect.field(msg, f);

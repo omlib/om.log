@@ -1,7 +1,5 @@
 package om.log;
 
-import om.log.Logger;
-
 interface Target {
     //var level : Null<Level>;
     var silent : Bool;

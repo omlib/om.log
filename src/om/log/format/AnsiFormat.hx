@@ -41,7 +41,7 @@ class AnsiFormat implements Format {
         };
     }
 
-    public function format(msg:Message) : String {
+    public function format(msg: om.log.Message) : String {
         var out = msg.content;
         var out = ansify(Date.fromTime(msg.time).toString(), theme.date);
         //trace(msg.level);

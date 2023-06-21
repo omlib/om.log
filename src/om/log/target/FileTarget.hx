@@ -1,8 +1,7 @@
 package om.log.target;
 
-import om.log.Logger;
 #if sys
-#else
+#elseif nodejs
 import js.node.fs.WriteStream;
 #end
 

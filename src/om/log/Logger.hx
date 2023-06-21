@@ -1,23 +1,20 @@
 package om.log;
 
-#if macro
-import haxe.macro.Context;
-import haxe.macro.Expr;
-#end
+import om.log.target.ConsoleTarget;
 
 class Logger {
 
     public var level : Null<Int>;
+    public var defaultLevel = 1;
     public var format : Format;
-    public var targets : Array<Target>;
+    public var targets : Array<Target> = []; 
     public var silent = false;
 
     public function new<T:Int>(level:T, ?targets: Array<Target>, ?format: Format) {
         this.level = level;
         this.format = format ?? cast new om.log.format.DefaultFormat();
-        trace(this.format);
-        this.targets = [];
-        if(targets != null) for(t in targets) add(t);
+        if(targets == null || targets.length == 0) add(new ConsoleTarget());
+        else for(t in targets) add(t);
     }
 
     public inline function iterator() : Iterator<Target>
@@ -47,7 +44,20 @@ class Logger {
         return true;
     }
 
-    public function log(level:Int, message:String, ?meta: Dynamic) {
+    macro public function log(ethis: Expr, rest: Array<Expr>) {
+        return switch rest.length {
+        case 0:
+            Context.error('invalid arguments', Context.currentPos());
+            macro null;
+        case 1:
+            var expr = rest[0];
+            macro $ethis.doLog($ethis.defaultLevel, $expr);
+        case _:
+            macro $ethis.doLog(${rest.shift()}, ${joinArgExprs(rest)});
+        }
+    }
+
+    public function doLog(level:Int, message: Dynamic, ?meta: Dynamic) {
         if(silent || level > this.level)
             return;
         final _targets = targets.filter(t -> return !t.silent && enabledFor(level));
@@ -55,25 +65,25 @@ class Logger {
             final msg : om.log.Message = {
                 level: level, // level.toString(),
                 time: om.Time.now(),
-                content: message,
+                content: Std.string(message),
                 meta: meta,
             };
-            var str = this.format.format(msg);
-            /*
             var str : String = null;
             if(this.format != null) str = this.format.format(msg);
-            */
             for(t in _targets) {
-                //if(t.format != null) t.output(t.format.format(msg)); 
-                //else if(str != null) t.output(str);
-                t.output(str);
+                if(t.format != null) t.output(t.format.format(msg)); 
+                else if(str != null) t.output(str);
             }
         }
-        //return this;
     }
-    
+
+    public function enabledFor(level: Null<Int>) : Bool {
+        return ((this.level == null) || (level == null)) ? true
+            : cast(this.level, Int) >= cast(level, Int);
+    }
+
     macro public function examine(ethis: Expr, rest: Array<Expr>) {
-        var printer = new haxe.macro.Printer();
+        final printer = new haxe.macro.Printer();
         var namedArgs = rest.map(e->{
             return switch e.expr {
             case EConst(CInt(_) | CFloat(_)): macro '$e';
@@ -84,11 +94,6 @@ class Logger {
             }
         });
         return macro $ethis.log(-1, ${joinArgExprs(namedArgs)});
-    }
-
-    public function enabledFor(level: Null<Int>) : Bool {
-        return ((this.level == null) || (level == null)) ? true
-            : cast(this.level, Int) >= cast(level, Int);
     }
 
     /*
@@ -113,16 +118,20 @@ class Logger {
 
     #if macro
 
-	static function joinArgExprs(rest: Array<Expr>) : ExprOf<String> {
-		var msg: Expr = macro '';
-		var sepExpr: Expr = {expr: EConst(CString(" ")), pos: haxe.macro.PositionTools.make({min: 0, max: 0, file: ""})};
-		for(i in 0...rest.length) {
+    static function joinArgExprs(rest: Array<Expr>) : ExprOf<String> {
+        final sep = " ";
+		final sep: Expr = {
+            expr: EConst(CString(sep)),
+            pos: PositionTools.make({min: 0, max: 0, file: ""})
+        };
+        var msg: Expr = macro '';
+        for(i in 0...rest.length) {
 			var e = rest[i];
 			msg = macro $msg + $e;
-			if (i != rest.length - 1) msg = macro $msg + $sepExpr;
+			if(i != rest.length - 1) msg = macro $msg + $sep;
 		}
 		return msg;
-	}
+    }
 
 	#end
 }

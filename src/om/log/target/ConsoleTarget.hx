@@ -1,7 +1,5 @@
 package om.log.target;
 
-import om.log.Logger;
-
 private enum StdFile {
     out;
     err;
@@ -15,23 +13,16 @@ class ConsoleTarget extends BaseTarget {
  
     public var file : StdFile;
 
-    // var levelMapping = [
-    //     debug => out,
-    //     info => out,
-    //     warn => out,
-    //     error => err
-    // ];
-
     public function new(?file=StdFile.out, ?format: Format) {
         super(format);
         this.file = file;
     }
 
-    public function output(message:String) {
-        final str = '$message\n';
+    public function output(str: String) {
+        final s = '$str\n';
         switch file {
-        case err: Sys.stderr().writeString(str);
-        case _: Sys.stdout().writeString(str);
+        case err: Sys.stderr().writeString(s);
+        case _: Sys.stdout().writeString(s);
         }
     }
 }

@@ -14,7 +14,7 @@ class KeyValueFormat implements om.log.Format {
         this.quoteStrings = quoteStrings;
     }
 
-    public function format(msg:Message) : String {
+    public function format(msg: om.log.Message) : String {
         final arr = new Array<String>();
         for(k in Reflect.fields(msg)) {
             final v : Null<Any> = Reflect.field(msg, k);

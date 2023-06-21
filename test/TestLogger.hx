@@ -1,20 +1,27 @@
+import om.log.target.ConsoleTarget;
 import utest.Assert.*;
 import om.log.Logger;
-import om.log.Level;
-using om.log.LevelTools;
 
 class TestLogger extends utest.Test {
 
-	function test_logger() {
-        var logger = new Logger();
-        equals(warn, logger.level);
-        //equals(1, logger.transports.length);
+	function test_logger_construct() {
+        var logger = new Logger(0);
+        equals(0, logger.level);
+        equals(1, logger.targets.length);
+        isTrue(Std.is(logger.targets[0], ConsoleTarget));
         notNull(logger.format);
-        isTrue(logger.enabledFor(error));
-        isTrue(logger.enabledFor(warn));
-        isFalse(logger.enabledFor(info));
-        isFalse(logger.enabledFor(debug));
-        isFalse(logger.enabledFor(verbose));
-        isFalse(logger.enabledFor(all));
 	}
+	
+    function test_logger_log() {
+        var logger = new Logger(0);
+        equals(0, logger.level);
+        notNull(logger.format);
+        logger.log("test");
+        logger.log(0, "test");
+    }
+
+    // function test_logger_examine() {
+    //     var logger = new Logger(0);
+    //     logger.examine(1, 2, 3);
+    // }
 }
