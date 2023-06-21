@@ -1,14 +1,9 @@
 package om.log;
-/*
-class LevelImpl {
-    var map : haxe.ds.IntMap<String>;
-}
 
-abstract Level(LevelImpl) {
-    @:to public function toInt() {}
-    @:to public function toString() {}
-    @: from public static function fromArray(a:Array<String>) {
-
-    }
+enum abstract Level(Int) from Int to Int {
+    var error = 0;
+    var warn = 1;
+    var info = 2;
+    var debug = 3;
+    var verbose = 4;
 }
-*/

@@ -2,15 +2,19 @@ package om.log;
 
 import om.log.target.ConsoleTarget;
 
-class Logger {
+typedef Logger = TypedLogger<om.log.Level>;
 
-    public var level : Null<Int>;
+class TypedLogger<T:Int> {
+
+    public var level : Null<T>;
     public var defaultLevel = 1;
     public var format : Format;
     public var targets : Array<Target> = []; 
     public var silent = false;
 
-    public function new<T:Int>(level:T, ?targets: Array<Target>, ?format: Format) {
+    var counts : Map<String,Int>;
+
+    public function new(level: T, ?targets: Array<Target>, ?format: Format) {
         this.level = level;
         this.format = format ?? cast new om.log.format.DefaultFormat();
         if(targets == null || targets.length == 0) add(new ConsoleTarget());
@@ -40,7 +44,7 @@ class Logger {
     public function remove(target: Target) : Bool {
         if(!this.targets.remove(target))
             return false;
-        target.dispose();
+        try target.dispose() catch(e) {}
         return true;
     }
 
@@ -96,6 +100,18 @@ class Logger {
         return macro $ethis.log(-1, ${joinArgExprs(namedArgs)});
     }
 
+    public function count(id: String, ?pos: haxe.PosInfos) : Int {
+        var key = '${pos.fileName}:${pos.lineNumber}';
+        var count = if(counts == null) {
+            counts = [];
+            1;
+        } else counts.get(key) + 1;
+        trace("COUNT:L:"+count);
+        counts.set(key, count);
+        log(0, '$id: $count');
+        return count;
+    }
+
     /*
     public function redirectTraces(defaultLevel:Int) {
         haxe.Log.trace = (v:Dynamic, ?infos: haxe.PosInfos) -> {
@@ -116,7 +132,38 @@ class Logger {
         targets = [];
     }
 
+    macro public static function create(?config:Expr, ?defaultLevel: Expr) {
+        var typeName = config.toString();
+        if(typeName == "null") {
+            trace('no type specified, using defualt');
+            typeName = "om.log.Level";
+        }
+        var type = Context.getType(typeName);
+        switch type {
+		case TAbstract(_.get() => ab,_) if(ab.meta.has(":enum")):
+            var fields = ab.impl.get().statics.get();
+            //for(f in fields) trace(f);
+            if(defaultLevel.toString() == "null") {
+                defaultLevel = macro $v{fields.length - 1};
+            }
+        case _:
+			throw type.toString() + " should be enum abstract";
+        }
+        return macro new om.log.Logger($defaultLevel);
+    }
+
     #if macro
+
+    // static function build() {
+    //     /*
+    //     trace("build");
+    //     var lt = Context.getLocalType();
+    //     //trace(lt);
+    //     trace(lt.extractMetaParam("level"));
+    //     */
+    //     var fields = Context.getBuildFields();
+    //     return fields;
+    // }
 
     static function joinArgExprs(rest: Array<Expr>) : ExprOf<String> {
         final sep = " ";

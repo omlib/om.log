@@ -12,6 +12,8 @@ import haxe.macro.Context;
 import haxe.macro.Expr;
 import haxe.macro.PositionTools;
 using haxe.macro.ExprTools;
+using haxe.macro.TypeTools;
+using om.macro.MacroTools;
 #end
 
 using StringTools;
