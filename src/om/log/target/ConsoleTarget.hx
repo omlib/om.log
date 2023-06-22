@@ -19,10 +19,17 @@ class ConsoleTarget extends BaseTarget {
     }
 
     public function output(str: String) {
+        #if sys
         final s = '$str\n';
         switch file {
         case err: Sys.stderr().writeString(s);
         case _: Sys.stdout().writeString(s);
         }
+        //TODO: js
+        #elseif nodejs
+        js.Node.cosnole.log(str);
+        #elseif js
+        js.Browser.console.log(str);
+      #end
     }
 }

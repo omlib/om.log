@@ -17,7 +17,7 @@ private typedef Theme = {
     // };
 }
 
-class AnsiFormat implements Format {
+class AnsiFormat implements om.log.Format {
 
     public var theme : Theme;
 

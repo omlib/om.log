@@ -1,5 +1,8 @@
 package om.log.format;
 
+import haxe.Json;
+import haxe.format.JsonPrinter;
+
 class JsonFormat implements om.log.Format {
 
     public var pretty : Bool;
@@ -16,6 +19,6 @@ class JsonFormat implements om.log.Format {
             final v = Reflect.field(msg, f);
             if(v != null) Reflect.setField(obj, f, v);
         }
-        return pretty ? haxe.format.JsonPrinter.print(obj, space) : haxe.Json.stringify(obj);
+        return pretty ? JsonPrinter.print(obj, space) : Json.stringify(obj);
     }
 }
