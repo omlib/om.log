@@ -100,7 +100,17 @@ class TypedLogger<T:Int> {
         return macro $ethis.log(-1, ${joinArgExprs(namedArgs)});
     }
 
-    public function count(id: String, ?pos: haxe.PosInfos) : Int {
+    public function count(id: String, ?level: Int, ?pos: haxe.PosInfos) : Int {
+        var k = '${pos.fileName}:${pos.lineNumber}';
+        var v = if(counts == null) {
+            counts = [];
+            1;
+        } else counts.exists(k) ? counts.get(k) + 1 : 1;
+        counts.set(k, v);
+        log(level, '$k: $v');
+        return v;
+
+      /*
         var key = '${pos.fileName}:${pos.lineNumber}';
         var count = if(counts == null) {
             counts = [];
@@ -110,6 +120,7 @@ class TypedLogger<T:Int> {
         counts.set(key, count);
         log(0, '$id: $count');
         return count;
+        */
     }
 
     /*
