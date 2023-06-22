@@ -27,7 +27,7 @@ class ConsoleTarget extends BaseTarget {
         }
         //TODO: js
         #elseif nodejs
-        js.Node.cosnole.log(str);
+        js.Node.console.log(str);
         #elseif js
         js.Browser.console.log(str);
       #end
